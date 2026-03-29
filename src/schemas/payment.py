@@ -1,22 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
-from enum import Enum
 from uuid import UUID
 
 from pydantic import AnyUrl, BaseModel, Field
 
-
-class Currency(str, Enum):
-    RUB = "RUB"
-    USD = "USD"
-    EUR = "EUR"
-
-
-class PaymentStatus(str, Enum):
-    pending = "pending"
-    succeeded = "succeeded"
-    failed = "failed"
+from src.common.enums import Currency, PaymentStatus
 
 
 class PaymentCreate(BaseModel):

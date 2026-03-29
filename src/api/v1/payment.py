@@ -10,7 +10,7 @@ from fastapi import (
     status
 )
 
-from src.core.auth import handle_api_key
+from src.common.auth import handle_api_key
 from src.schemas.payment import (
     PaymentCreate,
     PaymentCreatedResponse,
