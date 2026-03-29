@@ -12,7 +12,7 @@ class PaymentCreate(BaseModel):
     amount: Decimal = Field(gt=0)
     currency: Currency
     description: str
-    metadata: dict[str, Any] = Field(default_factory=dict)
+    metadata_: dict[str, Any] = Field(alias="metadata", default_factory=dict)
     webhook_url: AnyUrl
 
 
@@ -27,7 +27,7 @@ class PaymentDetail(BaseModel):
     amount: Decimal
     currency: Currency
     description: str
-    metadata: dict
+    metadata_: dict[str, Any] = Field(alias="metadata", default_factory=dict)
     status: PaymentStatus
     idempotency_key: str
     webhook_url: AnyUrl
