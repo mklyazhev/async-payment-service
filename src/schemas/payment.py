@@ -3,12 +3,14 @@ from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic import AnyUrl, BaseModel, Field, ConfigDict
 
 from src.common.enums import Currency, PaymentStatus
 
 
 class PaymentCreate(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     amount: Decimal = Field(gt=0)
     currency: Currency
     description: str
@@ -23,6 +25,8 @@ class PaymentCreatedResponse(BaseModel):
 
 
 class PaymentDetail(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, from_attributes=True)
+
     id: UUID
     amount: Decimal
     currency: Currency

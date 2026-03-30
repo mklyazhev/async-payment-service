@@ -8,6 +8,7 @@ from src.common.config import get_settings
 
 api_key = APIKeyHeader(name="X-API-Key", auto_error=False)
 
+
 def _raise_unauthorized() -> None:
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

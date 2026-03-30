@@ -16,7 +16,16 @@ class Payment(AbstractBase):
     currency: Mapped[Currency] = mapped_column(String(3), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     metadata_: Mapped[dict] = mapped_column("metadata", JSONB, nullable=False, default=dict)
-    status: Mapped[PaymentStatus] = mapped_column(String(20), nullable=False, default=PaymentStatus.PENDING)
-    idempotency_key: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    status: Mapped[PaymentStatus] = mapped_column(
+        String(20),
+        nullable=False,
+        default=PaymentStatus.PENDING
+    )
+    idempotency_key: Mapped[str] = mapped_column(
+        String(255),
+        unique=True,
+        nullable=False,
+        index=True
+    )
     webhook_url: Mapped[str] = mapped_column(Text, nullable=False)
     processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

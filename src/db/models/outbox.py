@@ -17,7 +17,11 @@ class Outbox(AbstractBase):
     event_type: Mapped[str] = mapped_column(String(64), nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
     routing_key: Mapped[str] = mapped_column(String(128), nullable=False)
-    status: Mapped[OutboxStatus] = mapped_column(String(20), nullable=False, default=OutboxStatus.NEW)
+    status: Mapped[OutboxStatus] = mapped_column(
+        String(20),
+        nullable=False,
+        default=OutboxStatus.NEW
+    )
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     next_retry_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
