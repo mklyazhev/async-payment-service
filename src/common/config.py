@@ -11,7 +11,8 @@ class Settings(BaseSettings):
     database_url: str
     rabbitmq_url: str
     api_key: str
-    db_pool_size: int | None = 5
+    db_pool_size: int = 5
+    max_webhook_retries: int = 3
 
 
 _settings = Settings()

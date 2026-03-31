@@ -7,6 +7,7 @@ from src.broker import broker
 from src.common.enums import OutboxStatus
 from src.db.engine import async_session_maker
 from src.db.models.outbox import Outbox
+from src.common.constants import MAIN_EXCHANGE
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ async def process_outbox() -> None:
                     await broker.publish(
                         event.payload,
                         routing_key=event.routing_key,
+                        exchange=MAIN_EXCHANGE,
                     )
                     event.status = OutboxStatus.PUBLISHED
                 except Exception as e:

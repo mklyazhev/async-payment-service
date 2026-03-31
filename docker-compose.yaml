@@ -47,5 +47,19 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  consumer:
+    build: .
+    container_name: consumer
+    command: python -m src.consumer
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
   postgres_data:
