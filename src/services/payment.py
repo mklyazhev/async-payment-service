@@ -7,6 +7,7 @@ from src.db.models.outbox import Outbox
 from src.common.enums import PaymentStatus, OutboxStatus
 from src.repositories.payment import PaymentRepository
 from src.schemas.payment import PaymentCreate
+from src.common.constants import QUEUE_NAME, EVENT_PAYMENT_CREATED
 
 
 class PaymentService:
@@ -28,7 +29,7 @@ class PaymentService:
             amount=data.amount,
             currency=data.currency,
             description=data.description,
-            metadata_=data.metadata_,
+            payment_metadata=data.payment_metadata,
             status=PaymentStatus.PENDING,
             idempotency_key=idempotency_key,
             webhook_url=str(data.webhook_url),
@@ -36,15 +37,15 @@ class PaymentService:
 
         outbox = Outbox(
             id=uuid4(),
-            event_type="payment.created",
+            event_type=EVENT_PAYMENT_CREATED,
             payload={"payment_id": str(payment.id)},
-            routing_key="payments.new",
+            routing_key=QUEUE_NAME,
             status=OutboxStatus.NEW,
         )
 
-        async with self.session.begin():
-            await self.repo.create(payment)
-            self.session.add(outbox)
+        await self.repo.create(payment)
+        self.session.add(outbox)
+        await self.session.commit()
 
         return payment
 

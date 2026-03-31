@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     api_key: str
     db_pool_size: int = 5
     max_webhook_retries: int = 3
+    max_consumer_retries: int = 3
 
 
 _settings = Settings()
