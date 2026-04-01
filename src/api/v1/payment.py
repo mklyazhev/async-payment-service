@@ -34,9 +34,9 @@ IdempotencyKeyHeader = Annotated[str, Header(alias="Idempotency-Key")]
     response_model=PaymentCreatedResponse
 )
 async def create_payment(
-    idempotency_key: IdempotencyKeyHeader,
-    body: PaymentCreate,
-    session: AsyncSession = Depends(get_session),
+        idempotency_key: IdempotencyKeyHeader,
+        body: PaymentCreate,
+        session: AsyncSession = Depends(get_session),
 ) -> PaymentCreatedResponse:
     service = PaymentService(session)
     payment = await service.create_payment(body, idempotency_key)
@@ -53,8 +53,8 @@ async def create_payment(
     response_model=PaymentDetail
 )
 async def get_payment(
-    payment_id: UUID,
-    session: AsyncSession = Depends(get_session),
+        payment_id: UUID,
+        session: AsyncSession = Depends(get_session),
 ) -> PaymentDetail:
     service = PaymentService(session)
     payment = await service.get_payment(payment_id)

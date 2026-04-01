@@ -16,9 +16,9 @@ class PaymentService:
         self.repo = PaymentRepository(session)
 
     async def create_payment(
-        self,
-        data: PaymentCreate,
-        idempotency_key: str,
+            self,
+            data: PaymentCreate,
+            idempotency_key: str,
     ) -> Payment:
         existing = await self.repo.get_by_idempotency_key(idempotency_key)
         if existing:

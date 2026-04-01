@@ -41,6 +41,56 @@ main_queue = RabbitQueue(
 )
 
 
+@broker.subscriber(main_queue, exchange=main_exchange)
+async def handle_payment(payload: dict) -> None:
+    last_error: Exception | None = None
+
+    for attempt in range(settings.max_consumer_retries):
+        try:
+            await process_payment(payload)
+            return
+        except Exception as e:  # pylint: disable=broad-except
+            last_error = e
+            logger.warning(
+                "Attempt %d/%d failed: %s",
+                attempt + 1,
+                settings.max_consumer_retries,
+                e,
+            )
+            if attempt < settings.max_consumer_retries - 1:
+                await asyncio.sleep(2 ** attempt)
+
+    logger.error(
+        "Payment permanently failed after %d attempts: %s",
+        settings.max_consumer_retries,
+        last_error,
+    )
+    raise last_error
+
+
+async def process_payment(payload: dict) -> None:
+    payment_id = payload.get("payment_id")
+    logger.info("Processing payment %s", payment_id)
+
+    async with async_session_maker() as session:
+        async with session.begin():
+            result = await session.execute(
+                select(Payment).where(Payment.id == payment_id)
+            )
+            payment = result.scalar_one_or_none()
+
+            if not payment:
+                logger.error("Payment %s not found", payment_id)
+                return
+
+            success = await emulate_gateway()
+            payment.status = PaymentStatus.SUCCEEDED if success else PaymentStatus.FAILED
+            payment.processed_at = datetime.now(timezone.utc)
+
+    await send_webhook(payment)
+    logger.info("Payment %s processed: %s", payment_id, payment.status)
+
+
 async def emulate_gateway() -> bool:
     await asyncio.sleep(random.uniform(2, 5))
     return random.random() < 0.9
@@ -70,56 +120,6 @@ async def send_webhook(payment: Payment) -> None:
                 await asyncio.sleep(2 ** attempt)
 
     logger.error("Webhook permanently failed for %s", payment.id)
-
-
-async def process_payment(payload: dict) -> None:
-    payment_id = payload.get("payment_id")
-    logger.info("Processing payment %s", payment_id)
-
-    async with async_session_maker() as session:
-        async with session.begin():
-            result = await session.execute(
-                select(Payment).where(Payment.id == payment_id)
-            )
-            payment = result.scalar_one_or_none()
-
-            if not payment:
-                logger.error("Payment %s not found", payment_id)
-                return
-
-            success = await emulate_gateway()
-            payment.status = PaymentStatus.SUCCEEDED if success else PaymentStatus.FAILED
-            payment.processed_at = datetime.now(timezone.utc)
-
-    await send_webhook(payment)
-    logger.info("Payment %s processed: %s", payment_id, payment.status)
-
-
-@broker.subscriber(main_queue, exchange=main_exchange)
-async def handle_payment(payload: dict) -> None:
-    last_error: Exception | None = None
-
-    for attempt in range(settings.max_consumer_retries):
-        try:
-            await process_payment(payload)
-            return
-        except Exception as e:  # pylint: disable=broad-except
-            last_error = e
-            logger.warning(
-                "Attempt %d/%d failed: %s",
-                attempt + 1,
-                settings.max_consumer_retries,
-                e,
-            )
-            if attempt < settings.max_consumer_retries - 1:
-                await asyncio.sleep(2 ** attempt)
-
-    logger.error(
-        "Payment permanently failed after %d attempts: %s",
-        settings.max_consumer_retries,
-        last_error,
-    )
-    raise last_error
 
 
 @broker.subscriber(dlq, exchange=dlx)

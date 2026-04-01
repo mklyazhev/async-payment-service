@@ -5,7 +5,6 @@ from fastapi.security import APIKeyHeader
 
 from src.common.config import get_settings
 
-
 api_key = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 

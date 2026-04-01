@@ -6,10 +6,12 @@ class Currency(str, Enum):
     USD = "USD"
     EUR = "EUR"
 
+
 class PaymentStatus(str, Enum):
     PENDING = "pending"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
+
 
 class OutboxStatus(str, Enum):
     NEW = "new"

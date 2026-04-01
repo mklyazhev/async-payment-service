@@ -31,8 +31,8 @@ async def process_outbox() -> None:
                         exchange=MAIN_EXCHANGE,
                     )
                     event.status = OutboxStatus.PUBLISHED
-                except Exception as e:
-                    logger.error(f"Failed to publish outbox event {event.id}: {e}")
+                except Exception as e:  # pylint: disable=broad-except
+                    logger.error("Failed to publish outbox event %s: %s", event.id, e)
 
 
 async def outbox_worker() -> None:
@@ -40,6 +40,6 @@ async def outbox_worker() -> None:
     while True:
         try:
             await process_outbox()
-        except Exception as e:
-            logger.error(f"Outbox worker error: {e}")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error("Outbox worker error: %s", e)
         await asyncio.sleep(1)
