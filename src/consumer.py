@@ -125,6 +125,16 @@ async def send_webhook(payment: Payment) -> None:
 @broker.subscriber(dlq, exchange=dlx)
 async def handle_dead_letter(payload: dict) -> None:
     logger.error("Dead letter received: %s", payload)
+    payment_id = payload.get("payment_id")
+    async with async_session_maker() as session:
+        async with session.begin():
+            result = await session.execute(
+                select(Payment).where(Payment.id == payment_id)
+            )
+            payment = result.scalar_one_or_none()
+            if payment:
+                payment.status = PaymentStatus.FAILED
+                payment.processed_at = datetime.now(timezone.utc)
 
 
 if __name__ == "__main__":
